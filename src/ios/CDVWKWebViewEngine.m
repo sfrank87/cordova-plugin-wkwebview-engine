@@ -440,6 +440,19 @@ static void * KVOContext = &KVOContext;
 
 #pragma mark WKNavigationDelegate implementation
 
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {
+    NSHTTPURLResponse * resp = (NSHTTPURLResponse*)[navigationResponse response];
+    NSDictionary  *diction = [resp allHeaderFields];
+
+    NSArray * cookies = [NSHTTPCookie cookiesWithResponseHeaderFields:diction forURL:[resp URL]];
+
+    for (NSHTTPCookie *cookie in cookies) {
+        [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:cookie];
+    }
+
+    return decisionHandler(YES);
+}
+
 - (void)webView:(WKWebView*)webView didStartProvisionalNavigation:(WKNavigation*)navigation
 {
     [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginResetNotification object:webView]];
